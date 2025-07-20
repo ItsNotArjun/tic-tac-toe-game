@@ -23,6 +23,21 @@ function generateRoomCode() {
 }
 
 wss.on("connection", (ws) => {
+  console.log(`connected`);
+
+  ws.on("close", () => {
+    const roomCode = ws.roomCode;
+    const room = rooms[roomCode];
+    if (room) {
+      room.players = room.players.filter(p => p !== ws);
+      if (room.players.length === 0) {
+        delete rooms[roomCode];
+      } else {
+        room.players[0].send(JSON.stringify({ type: "opponent-left" }));
+      }
+    }
+  });
+
   ws.on("message", (data) => {
     let message;
     message = JSON.parse(data);
@@ -33,8 +48,9 @@ wss.on("connection", (ws) => {
       rooms[roomCode] = { players: [ws], gameState: initGameState() };
       ws.roomCode = roomCode;
       ws.playerIndex = 0;
+      const toSend = { type: "created", roomCode: roomCode, playerIndex: 0 };
       ws.send(
-        JSON.stringify({ type: "created", roomCode: roomCode, playerIndex: 0 })
+        JSON.stringify(toSend)
       );
     }
 
@@ -101,28 +117,15 @@ wss.on("connection", (ws) => {
 
     else if (message.type === "play-again") {
       const room = rooms[ws.roomCode];
-      const gameState = initGameState();
-      restart.gameState = gameState;
-      restart.type = "restart"
-      restart.gameEnd = "";
+
+      restart = { type: "restart", gameState: initGameState(), gameEnd: "" }
       room.players.forEach(p =>
         p.send(JSON.stringify(restart))
       )
     }
   });
 
-  ws.on("close", () => {
-    const roomCode = ws.roomCode;
-    const room = rooms[roomCode];
-    if (room > 0) {
-      room.players = room.players.filter(p => p !== ws);
-      if (room.players.length === 0) {
-        delete rooms[roomCode];
-      } else {
-        room.players[0].send(JSON.stringify({ type: "opponent-left" }));
-      }
-    }
-  });
+
 });
 
 function initGameState() {

@@ -10,7 +10,7 @@ export type Message = { type: "connected" }
     | { type: "created"; roomCode: string; playerIndex: number }
     | { type: "start"; roomCode: string; playerIndex: number; gameState: GameState }
     | { type: "update"; gameState: GameState }
-    | { type: "opponent_left" }
+    | { type: "opponent-left" }
     | { type: "err", error: string }
     | { type: "ended", gameEnd: string }
     | { type: "restart", gameState: GameState, gameEnd: string }
@@ -29,15 +29,7 @@ export class Network {
     private listeners: ((msg: any) => void)[] = [];
 
     private constructor() {
-        this.socket = new WebSocket('ws://192.168.1.9:3000');
-        this.socket.addEventListener('open', () => {
-            console.log('Connected to WS Server');
-            this.listeners.forEach(listener => listener({ type: "connected" }));
-        });
-        this.socket.addEventListener('message', (event) => {
-            const message: any = JSON.parse(event.data);
-            this.listeners.forEach(listener => listener(message));
-        });
+        this.reInitConn();
     }
 
     public createRoom() {
@@ -51,7 +43,7 @@ export class Network {
         }
     }
 
-    public updateBoard( gameBoard: string[] ) {
+    public updateBoard(gameBoard: string[]) {
         this.socket.send(JSON.stringify({ type: "move", gameBoard }));
     }
 
@@ -59,9 +51,25 @@ export class Network {
         this.socket.send(JSON.stringify({ type: "play-again" }));
     }
 
+    public reInitConn() {
+        if (this.socket) {
+            this.socket.close();
+        }
+        this.socket = new WebSocket('ws://192.168.1.9:3000');
+        this.socket.addEventListener('open', () => {
+            console.log('Connected to WS Server');
+            this.listeners.forEach(listener => listener({ type: "connected" }));
+        });
+        this.socket.addEventListener('message', (event) => {
+            const message: any = JSON.parse(event.data);
+            this.listeners.forEach(listener => listener(message));
+        });
+    }
+
     public onMessage(callback: (msg: Message) => void) {
         this.listeners.push(callback);
     }
+
     // const socket = new WebSocket('ws://localhost:3000');
     // let message: Message = JSON.parse(event.data);
 }

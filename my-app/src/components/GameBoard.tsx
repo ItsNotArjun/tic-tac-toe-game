@@ -2,9 +2,6 @@ import { title } from "process";
 import * as React from 'react';
 import '../App.css';
 import { Network, Message } from '../backend'
-// import './App.css';
-
-// let positions: string[];
 
 type SquareProps = {
   value: string;
@@ -17,54 +14,50 @@ type BoardProps = {
   player: number;
   currentState: { gameBoard: string[], currentPlayer: number };
   gameEnd: string;
+  onLeaveRoom: any;
+  left: boolean;
 };
 
-var currentTurn: number = 0;
-var played: boolean[] = new Array(9).fill(false);
-export default function GameBoard({ roomCode, start, player, currentState, gameEnd }: BoardProps) {
+export default function GameBoard({ roomCode, start, player, currentState, gameEnd, onLeaveRoom, left }: BoardProps) {
 
   const [waiting, setWaiting] = React.useState(true);
   const [initial, setInitial] = React.useState(false);
 
   React.useEffect(() => {
-    if (!currentState.gameBoard) {
-      setInitial(false);
-    }
-    else {
-      setInitial(false);
-      let x = false;
-      for (let i = 0; i < currentState.gameBoard.length; i++) {
-        if (currentState.gameBoard[i] !== " ") {
-          x = true;
-        }
+    setInitial(false);
+    let x = false;
+    for (let i = 0; i < currentState.gameBoard.length; i++) {
+      if (currentState.gameBoard[i] !== " ") {
+        x = true;
       }
+    }
 
-      if (!x) {
-        if (start > 0) {
-          setInitial(true);
-        }
+    if (!x) {
+      if (start > 0) {
+        setInitial(true);
       }
     }
   }, [currentState, start])
 
   React.useEffect(() => {
-    if (!currentState.gameBoard) {
-      setWaiting(false);
-    }
-    else {
-      let x = false;
-      for (let i = 0; i < currentState.gameBoard.length; i++) {
-        if (currentState.gameBoard[i] !== " ") {
-          x = true;
-        }
-      }
-      if (!x) {
-        if (initial) {
-          setWaiting(false);
-        }
+    setWaiting(true);
+    let x = false;
+    for (let i = 0; i < currentState.gameBoard.length; i++) {
+      if (currentState.gameBoard[i] !== " ") {
+        x = true;
       }
     }
-  }, [initial])
+    if (!x) {
+      if (initial) {
+        setWaiting(false);
+      }
+    }
+    else setWaiting(false);
+
+    if (left) {
+      setWaiting(true);
+    }
+  }, [initial, left])
 
   const Square = ({ value, onSquareClick }: SquareProps) => {
     return (
@@ -73,28 +66,6 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
       </div>
     );
   };
-
-  const [test, setTest] = React.useState([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']);
-  const winning = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-  var gameOver: boolean = false;
-  var won: string = 'O won!';
-
-  if (currentTurn >= 9) {
-    gameOver = true;
-    won = "It's a tie!";
-  }
-
-  for (let i = 0; i < winning.length; i++) {
-    if (test[winning[i][0]] == test[winning[i][1]] && test[winning[i][1]] == test[winning[i][2]] && test[winning[i][0]] != ' ') {
-      for (let i = 0; i < played.length; i++) {
-        played[i] = true;
-      }
-      gameOver = true;
-      if (test[winning[i][0]] == 'X') {
-        won = 'X won!';
-      }
-    }
-  }
 
   function handleClick(i: number) {
     if (gameEnd === "") {
@@ -126,44 +97,51 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
     Network.getNetwork().playAgain();
   }
 
-  console.log(`I am player ${player}`);
-  console.log(`its ${currentState.currentPlayer}'s chance to play`)
+  function leaveRoom() {
+    onLeaveRoom();
+    Network.getNetwork().reInitConn();
+  }
+
+
   return (
     <>
-      <div style={{ fontSize: 18, marginBottom: 20, marginTop: 5, marginLeft: 5 }}>Room code: <strong>{roomCode}</strong></div>
+      <div style={{ fontSize: 18, marginBottom: 20, marginTop: 5, marginLeft: 5, position: "relative", float: "left" }}>Room code: <strong>{roomCode}</strong></div>
+      <div style={{ fontSize: 18, marginBottom: 20, marginTop: 5, marginRight: 10, position: "relative", float: "right" }}><strong>You are Player {player + 1}</strong></div>
       <div style={{ width: 450, height: 350, position: "relative", left: window.innerWidth / 2 - 175, paddingTop: 250, textAlign: "center" }}>
-        <div style={{ position: "relative", float: "left" }}>
+        <div style={{ width: 300, position: "relative", float: "left", alignContent: "center" }}>
           <div style={{ paddingBottom: 10 }}>
             <text style={{ fontSize: 40 }}>{gameEnd}</text>
           </div>
           {
             initial
-              ? <div style={{ paddingBottom: 10 }}>
+              ? <div style={{ paddingBottom: 10, display: "flex", justifyContent: "center" }}>
                 <text style={{ fontSize: 30 }}>Player {start} goes first!</text>
               </div>
               : <></>
           }
           {
             waiting
-              ? <div style={{ paddingBottom: 10 }}>
+              ? <div style={{ paddingBottom: 10, display: "flex", justifyContent: "center" }}>
                 <text style={{ fontSize: 30 }}>Waiting for player 2 to join</text>
               </div>
               : <></>
           }
-          <div className="board-row" style={{ height: 100, padding: 0 }} >
-            <Square value={currentState.gameBoard[0]} onSquareClick={() => handleClick(0)} />
-            <Square value={currentState.gameBoard[1]} onSquareClick={() => handleClick(1)} />
-            <Square value={currentState.gameBoard[2]} onSquareClick={() => handleClick(2)} />
-          </div>
-          <div className="board-row" style={{ height: 100, padding: 0 }}>
-            <Square value={currentState.gameBoard[3]} onSquareClick={() => handleClick(3)} />
-            <Square value={currentState.gameBoard[4]} onSquareClick={() => handleClick(4)} />
-            <Square value={currentState.gameBoard[5]} onSquareClick={() => handleClick(5)} />
-          </div>
-          <div className="board-row" style={{ height: 101, padding: 0 }}>
-            <Square value={currentState.gameBoard[6]} onSquareClick={() => handleClick(6)} />
-            <Square value={currentState.gameBoard[7]} onSquareClick={() => handleClick(7)} />
-            <Square value={currentState.gameBoard[8]} onSquareClick={() => handleClick(8)} />
+          <div style={{ width: 300, display: "flex", justifyContent: "center" }}>
+            <div className="board-row" style={{ height: 100, padding: 0 }} >
+              <Square value={currentState.gameBoard[0]} onSquareClick={() => handleClick(0)} />
+              <Square value={currentState.gameBoard[1]} onSquareClick={() => handleClick(1)} />
+              <Square value={currentState.gameBoard[2]} onSquareClick={() => handleClick(2)} />
+            </div>
+            <div className="board-row" style={{ height: 100, padding: 0 }}>
+              <Square value={currentState.gameBoard[3]} onSquareClick={() => handleClick(3)} />
+              <Square value={currentState.gameBoard[4]} onSquareClick={() => handleClick(4)} />
+              <Square value={currentState.gameBoard[5]} onSquareClick={() => handleClick(5)} />
+            </div>
+            <div className="board-row" style={{ height: 101, padding: 0 }}>
+              <Square value={currentState.gameBoard[6]} onSquareClick={() => handleClick(6)} />
+              <Square value={currentState.gameBoard[7]} onSquareClick={() => handleClick(7)} />
+              <Square value={currentState.gameBoard[8]} onSquareClick={() => handleClick(8)} />
+            </div>
           </div>
         </div>
         {
@@ -173,6 +151,9 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
             </div>
             : <></>
         }
+        <div onClick={leaveRoom} style={{ width: 110, height: 32, position: "relative", float: "right", borderRadius: 6, top: "50%", cursor: "pointer", background: "#ff3131ff", color: "white", marginTop: 10 }}>
+          <text style={{ fontSize: 20 }}>leave room</text>
+        </div>
       </div>
 
     </>

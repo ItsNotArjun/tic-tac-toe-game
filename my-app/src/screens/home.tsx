@@ -54,6 +54,7 @@ export function Home() {
     const [player, setPlayer] = React.useState(-1);
     const [currentState, setCurrentState] = React.useState({ gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: -1 });
     const [gameEnd, setGameEnd] = React.useState("");
+    const [left, setLeft] = React.useState(false);
 
     React.useEffect(() => {
         Network.getNetwork().onMessage((msg: Message) => {
@@ -61,7 +62,9 @@ export function Home() {
                 setConn(true);
             }
             else if (msg.type === "created") {
+                console.log("server sent");
                 setIsBoard(true);
+                setCurrentState({ gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: -1 })
                 setRoomCode(msg.roomCode);
             }
             else if (msg.type === "err") {
@@ -70,8 +73,10 @@ export function Home() {
             else if (msg.type === "start") {
                 setIsBoard(true);
                 setConn(true);
+                setLeft(false);
                 setStart(msg.gameState.currentPlayer);
-                setCurrentState({gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: msg.gameState.currentPlayer});
+                setCurrentState({ gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: msg.gameState.currentPlayer });
+                setRoomCode(msg.roomCode);
             }
             else if (msg.type === "update") {
                 setCurrentState(msg.gameState);
@@ -79,6 +84,17 @@ export function Home() {
             }
             else if (msg.type === "ended") {
                 setGameEnd(msg.gameEnd);
+            }
+            else if (msg.type === "restart") {
+                setStart(msg.gameState.currentPlayer);
+                setCurrentState(msg.gameState);
+                setGameEnd(msg.gameEnd);
+            }
+            else if (msg.type === "opponent-left") {
+                console.log("left");
+                setCurrentState({ gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: -1 });
+                setStart(-1);
+                setLeft(true);
             }
         })
     }, [])
@@ -96,6 +112,7 @@ export function Home() {
 
     function createRoom() {
         // setConn(true);
+        console.log("create room called");
         Network.getNetwork().createRoom();
         setPlayer(0);
     }
@@ -105,7 +122,7 @@ export function Home() {
         <>
             {
                 isBoard
-                    ? <GameBoard roomCode={roomCode} start={start + 1} player={player} currentState={currentState} gameEnd={gameEnd}/>
+                    ? <GameBoard roomCode={roomCode} start={start + 1} player={player} currentState={currentState} gameEnd={gameEnd} onLeaveRoom={() => { setIsBoard(false) }} left={left} />
                     :
                     <div style={styles.container}>
                         <h1 style={styles.header}>Welcome to Tic Tac Toe</h1>

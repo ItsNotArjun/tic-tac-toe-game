@@ -78,7 +78,6 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
       }
 
       if (player === currentState.currentPlayer) {
-
         if (currentState.gameBoard[i] === " ") {
           if (player === 1) {
             pos[i] = "X";
@@ -86,9 +85,8 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
           else {
             pos[i] = "O";
           }
+          Network.getNetwork().updateBoard(pos);
         }
-
-        Network.getNetwork().updateBoard(pos);
       }
     }
   }

@@ -63,7 +63,7 @@ wss.on("connection", (ws) => {
 
     else if (message.type === "move") {
       const room = rooms[ws.roomCode];
-      let gameBoard = room.gameState.board;
+      let gameBoard = room.gameState.gameBoard;
       let gameEnd = "";
 
       if (room.gameState.currentPlayer === ws.playerIndex) {
@@ -93,10 +93,20 @@ wss.on("connection", (ws) => {
         )
       }
 
-      const toSend = { type: "update", gameState: { board: gameBoard, currentPlayer: room.gameState.currentPlayer } }
-      console.log(`sending ${JSON.stringify(toSend)} to ${room.players.length} players`);
+      const toSend = { type: "update", gameState: { gameBoard: gameBoard, currentPlayer: room.gameState.currentPlayer } }
       room.players.forEach(p =>
         p.send(JSON.stringify(toSend))
+      )
+    }
+
+    else if (message.type === "play-again") {
+      const room = rooms[ws.roomCode];
+      const gameState = initGameState();
+      restart.gameState = gameState;
+      restart.type = "restart"
+      restart.gameEnd = "";
+      room.players.forEach(p =>
+        p.send(JSON.stringify(restart))
       )
     }
   });
@@ -117,7 +127,7 @@ wss.on("connection", (ws) => {
 
 function initGameState() {
   return {
-    board: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: Math.random() >= 0.5 ? 1 : 0
+    gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: Math.random() >= 0.5 ? 1 : 0
   };
 }
 

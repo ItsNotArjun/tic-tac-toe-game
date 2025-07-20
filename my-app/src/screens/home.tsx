@@ -52,7 +52,7 @@ export function Home() {
     const [roomCode, setRoomCode] = React.useState("");
     const [start, setStart] = React.useState(-1);
     const [player, setPlayer] = React.useState(-1);
-    const [currentState, setCurrentState] = React.useState({ board: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: -1 });
+    const [currentState, setCurrentState] = React.useState({ gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: -1 });
     const [gameEnd, setGameEnd] = React.useState("");
 
     React.useEffect(() => {
@@ -71,7 +71,7 @@ export function Home() {
                 setIsBoard(true);
                 setConn(true);
                 setStart(msg.gameState.currentPlayer);
-                setCurrentState({board: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: msg.gameState.currentPlayer});
+                setCurrentState({gameBoard: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: msg.gameState.currentPlayer});
             }
             else if (msg.type === "update") {
                 setCurrentState(msg.gameState);

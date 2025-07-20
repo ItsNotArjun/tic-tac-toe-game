@@ -15,7 +15,7 @@ type BoardProps = {
   roomCode: string;
   start: number;
   player: number;
-  currentState: { board: string[], currentPlayer: number };
+  currentState: { gameBoard: string[], currentPlayer: number };
   gameEnd: string;
 };
 
@@ -27,14 +27,14 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
   const [initial, setInitial] = React.useState(false);
 
   React.useEffect(() => {
-    if (!currentState.board) {
+    if (!currentState.gameBoard) {
       setInitial(false);
     }
     else {
       setInitial(false);
       let x = false;
-      for (let i = 0; i < currentState.board.length; i++) {
-        if (currentState.board[i] !== " ") {
+      for (let i = 0; i < currentState.gameBoard.length; i++) {
+        if (currentState.gameBoard[i] !== " ") {
           x = true;
         }
       }
@@ -48,13 +48,13 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
   }, [currentState, start])
 
   React.useEffect(() => {
-    if (!currentState.board) {
+    if (!currentState.gameBoard) {
       setWaiting(false);
     }
     else {
       let x = false;
-      for (let i = 0; i < currentState.board.length; i++) {
-        if (currentState.board[i] !== " ") {
+      for (let i = 0; i < currentState.gameBoard.length; i++) {
+        if (currentState.gameBoard[i] !== " ") {
           x = true;
         }
       }
@@ -99,8 +99,8 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
   function handleClick(i: number) {
     if (gameEnd === "") {
       let pos: string[] = [];
-      if (currentState.board) {
-        pos = [...currentState.board]
+      if (currentState.gameBoard) {
+        pos = [...currentState.gameBoard]
       }
       else {
         pos = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
@@ -108,7 +108,7 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
 
       if (player === currentState.currentPlayer) {
 
-        if (currentState.board[i] === " ") {
+        if (currentState.gameBoard[i] === " ") {
           if (player === 1) {
             pos[i] = "X";
           }
@@ -123,12 +123,7 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
   }
 
   function playAgain() {
-    currentTurn = 0;
-    setTest([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']);
-    for (let i = 0; i < played.length; i++) {
-      played[i] = false;
-      gameOver = true;
-    }
+    Network.getNetwork().playAgain();
   }
 
   console.log(`I am player ${player}`);
@@ -156,23 +151,23 @@ export default function GameBoard({ roomCode, start, player, currentState, gameE
               : <></>
           }
           <div className="board-row" style={{ height: 100, padding: 0 }} >
-            <Square value={currentState.board[0]} onSquareClick={() => handleClick(0)} />
-            <Square value={currentState.board[1]} onSquareClick={() => handleClick(1)} />
-            <Square value={currentState.board[2]} onSquareClick={() => handleClick(2)} />
+            <Square value={currentState.gameBoard[0]} onSquareClick={() => handleClick(0)} />
+            <Square value={currentState.gameBoard[1]} onSquareClick={() => handleClick(1)} />
+            <Square value={currentState.gameBoard[2]} onSquareClick={() => handleClick(2)} />
           </div>
           <div className="board-row" style={{ height: 100, padding: 0 }}>
-            <Square value={currentState.board[3]} onSquareClick={() => handleClick(3)} />
-            <Square value={currentState.board[4]} onSquareClick={() => handleClick(4)} />
-            <Square value={currentState.board[5]} onSquareClick={() => handleClick(5)} />
+            <Square value={currentState.gameBoard[3]} onSquareClick={() => handleClick(3)} />
+            <Square value={currentState.gameBoard[4]} onSquareClick={() => handleClick(4)} />
+            <Square value={currentState.gameBoard[5]} onSquareClick={() => handleClick(5)} />
           </div>
           <div className="board-row" style={{ height: 101, padding: 0 }}>
-            <Square value={currentState.board[6]} onSquareClick={() => handleClick(6)} />
-            <Square value={currentState.board[7]} onSquareClick={() => handleClick(7)} />
-            <Square value={currentState.board[8]} onSquareClick={() => handleClick(8)} />
+            <Square value={currentState.gameBoard[6]} onSquareClick={() => handleClick(6)} />
+            <Square value={currentState.gameBoard[7]} onSquareClick={() => handleClick(7)} />
+            <Square value={currentState.gameBoard[8]} onSquareClick={() => handleClick(8)} />
           </div>
         </div>
         {
-          gameOver
+          gameEnd !== ""
             ? <div onClick={playAgain} style={{ width: 110, height: 32, position: "relative", float: "right", borderRadius: 6, top: "50%", cursor: "pointer", background: "#00c5ff", color: "white" }}>
               <text style={{ fontSize: 20 }}>play again?</text>
             </div>

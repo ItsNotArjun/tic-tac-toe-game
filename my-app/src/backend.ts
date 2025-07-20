@@ -2,7 +2,7 @@ import * as React from 'react';
 import GameBoard from './components/GameBoard';
 
 type GameState = {
-    board: string[];
+    gameBoard: string[];
     currentPlayer: 0 | 1;
 };
 
@@ -12,7 +12,8 @@ export type Message = { type: "connected" }
     | { type: "update"; gameState: GameState }
     | { type: "opponent_left" }
     | { type: "err", error: string }
-    | { type: "ended", gameEnd: string };
+    | { type: "ended", gameEnd: string }
+    | { type: "restart", gameState: GameState, gameEnd: string }
 
 export class Network {
     private static myInstance: Network | null = null;
@@ -52,6 +53,10 @@ export class Network {
 
     public updateBoard( gameBoard: string[] ) {
         this.socket.send(JSON.stringify({ type: "move", gameBoard }));
+    }
+
+    public playAgain() {
+        this.socket.send(JSON.stringify({ type: "play-again" }));
     }
 
     public onMessage(callback: (msg: Message) => void) {

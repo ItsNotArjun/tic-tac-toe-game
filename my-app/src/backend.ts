@@ -1,0 +1,61 @@
+import * as React from 'react';
+import GameBoard from './components/GameBoard';
+
+type GameState = {
+    board: string[];
+    currentPlayer: 0 | 1;
+};
+
+export type Message = { type: "connected" }
+    | { type: "created"; roomCode: string; playerIndex: number }
+    | { type: "start"; roomCode: string; playerIndex: number; gameState: GameState }
+    | { type: "update"; gameState: GameState }
+    | { type: "opponent_left" }
+    | { type: "err", error: string };
+
+export class Network {
+    private static myInstance: Network | null = null;
+
+    public static getNetwork(): Network {
+        if (!Network.myInstance) {
+            Network.myInstance = new Network();
+        }
+        return Network.myInstance;
+    }
+
+    private socket: WebSocket;
+    private listeners: ((msg: any) => void)[] = [];
+
+    private constructor() {
+        this.socket = new WebSocket('ws://localhost:3000');
+        this.socket.addEventListener('open', () => {
+            console.log('Connected to WS Server');
+            this.listeners.forEach(listener => listener({ type: "connected" }));
+        });
+        this.socket.addEventListener('message', (event) => {
+            const message: any = JSON.parse(event.data);
+            this.listeners.forEach(listener => listener(message));
+        });
+    }
+
+    public createRoom() {
+        var code: string;
+        this.socket.send(JSON.stringify({ type: "create" }));
+    }
+
+    public joinRoom(code: string) {
+        if (code as unknown as number > 0 && code as unknown as number <= 9999) {
+            this.socket.send(JSON.stringify({ type: "join", roomCode: code }));
+        }
+    }
+
+    public updateBoard( gameBoard: string[] ) {
+        this.socket.send(JSON.stringify({ type: "move", gameBoard }));
+    }
+
+    public onMessage(callback: (msg: Message) => void) {
+        this.listeners.push(callback);
+    }
+    // const socket = new WebSocket('ws://localhost:3000');
+    // let message: Message = JSON.parse(event.data);
+}

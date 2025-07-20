@@ -11,7 +11,8 @@ export type Message = { type: "connected" }
     | { type: "start"; roomCode: string; playerIndex: number; gameState: GameState }
     | { type: "update"; gameState: GameState }
     | { type: "opponent_left" }
-    | { type: "err", error: string };
+    | { type: "err", error: string }
+    | { type: "ended", gameEnd: string };
 
 export class Network {
     private static myInstance: Network | null = null;
@@ -27,7 +28,7 @@ export class Network {
     private listeners: ((msg: any) => void)[] = [];
 
     private constructor() {
-        this.socket = new WebSocket('ws://localhost:3000');
+        this.socket = new WebSocket('ws://192.168.1.9:3000');
         this.socket.addEventListener('open', () => {
             console.log('Connected to WS Server');
             this.listeners.forEach(listener => listener({ type: "connected" }));

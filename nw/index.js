@@ -64,40 +64,40 @@ wss.on("connection", (ws) => {
     else if (message.type === "move") {
       const room = rooms[ws.roomCode];
       let gameBoard = room.gameState.board;
+      let gameEnd = "";
 
       if (room.gameState.currentPlayer === ws.playerIndex) {
         gameBoard = message.gameBoard;
-        console.log(`gameboard from message is ${gameBoard}`);
         room.gameState.currentPlayer = 1 - ws.playerIndex;
+
+        const winning = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+
+        for (let i = 0; i < winning.length; i++) {
+          if (gameBoard[winning[i][0]] == gameBoard[winning[i][1]] && gameBoard[winning[i][1]] == gameBoard[winning[i][2]] && gameBoard[winning[i][0]] != ' ') {
+            if (gameBoard[winning[i][0]] == 'X') {
+              gameEnd = "X won!";
+            }
+            else {
+              gameEnd = "O won!"
+            }
+          }
+        }
+
+        if (gameBoard.filter(p => p != " ").length === 9) {
+          gameEnd = "tied!"
+        }
       }
+      if (gameEnd !== "") {
+        room.players.forEach(p =>
+          p.send(JSON.stringify({ type: "ended", gameEnd: gameEnd }))
+        )
+      }
+
       const toSend = { type: "update", gameState: { board: gameBoard, currentPlayer: room.gameState.currentPlayer } }
       console.log(`sending ${JSON.stringify(toSend)} to ${room.players.length} players`);
       room.players.forEach(p =>
         p.send(JSON.stringify(toSend))
       )
-      //   const room = rooms[ws.roomCode];
-      //   if (!room || !room.players.includes(ws)) return;
-
-      //   const { x, y } = message;
-      //   const currentPlayer = ws.playerIndex;
-
-      //   if (
-      //     room.gameState.board[y][x] === null &&
-      //     room.gameState.currentPlayer === currentPlayer
-      //   ) {
-      //     room.gameState.board[y][x] = currentPlayer;
-      //     room.gameState.currentPlayer = 1 - currentPlayer;
-
-      //     // Broadcast updated game state
-      //     room.players.forEach(player =>
-      //       player.send(
-      //         JSON.stringify({
-      //           type: "update",
-      //           gameState: room.gameState
-      //         })
-      //       )
-      //     );
-      //   }
     }
   });
 

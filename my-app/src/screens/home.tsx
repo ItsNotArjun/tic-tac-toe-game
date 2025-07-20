@@ -53,6 +53,7 @@ export function Home() {
     const [start, setStart] = React.useState(-1);
     const [player, setPlayer] = React.useState(-1);
     const [currentState, setCurrentState] = React.useState({ board: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], currentPlayer: -1 });
+    const [gameEnd, setGameEnd] = React.useState("");
 
     React.useEffect(() => {
         Network.getNetwork().onMessage((msg: Message) => {
@@ -74,7 +75,10 @@ export function Home() {
             }
             else if (msg.type === "update") {
                 setCurrentState(msg.gameState);
-                console.log(`updated, new gb is ${JSON.stringify(msg.gameState)}`);
+                // console.log(`updated, new gb is ${JSON.stringify(msg.gameState)}`);
+            }
+            else if (msg.type === "ended") {
+                setGameEnd(msg.gameEnd);
             }
         })
     }, [])
@@ -96,12 +100,12 @@ export function Home() {
         setPlayer(0);
     }
 
-    console.log(`current state is ${JSON.stringify(currentState)}`);
+    // console.log(`current state is ${JSON.stringify(currentState)}`);
     return (
         <>
             {
                 isBoard
-                    ? <GameBoard roomCode={roomCode} start={start + 1} player={player} currentState={currentState}/>
+                    ? <GameBoard roomCode={roomCode} start={start + 1} player={player} currentState={currentState} gameEnd={gameEnd}/>
                     :
                     <div style={styles.container}>
                         <h1 style={styles.header}>Welcome to Tic Tac Toe</h1>

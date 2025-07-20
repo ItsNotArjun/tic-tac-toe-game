@@ -16,15 +16,15 @@ type BoardProps = {
   start: number;
   player: number;
   currentState: { board: string[], currentPlayer: number };
+  gameEnd: string;
 };
 
 var currentTurn: number = 0;
 var played: boolean[] = new Array(9).fill(false);
-export default function GameBoard({ roomCode, start, player, currentState }: BoardProps) {
+export default function GameBoard({ roomCode, start, player, currentState, gameEnd }: BoardProps) {
 
   const [waiting, setWaiting] = React.useState(true);
   const [initial, setInitial] = React.useState(false);
-  // const [updatedBoard, setUpdatedBoard] = React.useState([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']);
 
   React.useEffect(() => {
     if (!currentState.board) {
@@ -97,46 +97,28 @@ export default function GameBoard({ roomCode, start, player, currentState }: Boa
   }
 
   function handleClick(i: number) {
-    // const positions = [...test];
-    // // alert("clicked");
-    // if (!played[i]) {
-    //   played[i] = true;
-    //   if (currentTurn % 2 == 0) {
-    //     positions[i] = "X";
-    //   }
-    //   else {
-    //     positions[i] = "O";
-    //   }
-    //   setTest(positions);
-    //   setGameState(positions);
-    //   currentTurn++;
-    //   console.log(played);
-    //   // console.log(positions);
-    // }
-    console.log(`current board is ${JSON.stringify(currentState)}, player is ${player}`);
-    let pos: string[] = [];
-    if (currentState.board) {
-      pos = [...currentState.board]
-    }
-    else {
-      pos = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-    }
-
-    if (player === currentState.currentPlayer) {
-
-      if (currentState.board[i] === " ") {
-        if (player === 1) {
-          pos[i] = "X";
-        }
-        else {
-          pos[i] = "O";
-        }
+    if (gameEnd === "") {
+      let pos: string[] = [];
+      if (currentState.board) {
+        pos = [...currentState.board]
+      }
+      else {
+        pos = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
       }
 
-      Network.getNetwork().updateBoard(pos);
-      // setUpdatedBoard(pos);
-      console.log(`pos is ${pos}`);
+      if (player === currentState.currentPlayer) {
 
+        if (currentState.board[i] === " ") {
+          if (player === 1) {
+            pos[i] = "X";
+          }
+          else {
+            pos[i] = "O";
+          }
+        }
+
+        Network.getNetwork().updateBoard(pos);
+      }
     }
   }
 
@@ -156,13 +138,9 @@ export default function GameBoard({ roomCode, start, player, currentState }: Boa
       <div style={{ fontSize: 18, marginBottom: 20, marginTop: 5, marginLeft: 5 }}>Room code: <strong>{roomCode}</strong></div>
       <div style={{ width: 450, height: 350, position: "relative", left: window.innerWidth / 2 - 175, paddingTop: 250, textAlign: "center" }}>
         <div style={{ position: "relative", float: "left" }}>
-          {
-            gameOver
-              ? <div style={{ paddingBottom: 10 }}>
-                <text style={{ fontSize: 40 }}>{won}</text>
-              </div>
-              : <> </>
-          }
+          <div style={{ paddingBottom: 10 }}>
+            <text style={{ fontSize: 40 }}>{gameEnd}</text>
+          </div>
           {
             initial
               ? <div style={{ paddingBottom: 10 }}>

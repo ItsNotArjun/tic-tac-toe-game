@@ -14,6 +14,8 @@ app.get("/", (req, res) => {
   res.send("WebSocket Tic Tac Toe server running");
 });
 
+app.use(express.static('tic-tac-toe-game'));
+
 function generateRoomCode() {
   let code = Math.floor(10000 * Math.random());
   if (code === 0) {

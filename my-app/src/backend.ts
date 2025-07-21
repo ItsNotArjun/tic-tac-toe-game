@@ -56,6 +56,7 @@ export class Network {
             this.socket.close();
         }
         this.socket = new WebSocket('ws://34.53.56.116');
+        // this.socket = new WebSocket('ws://127.0.0.1');
         this.socket.addEventListener('open', () => {
             console.log('Connected to WS Server');
             this.listeners.forEach(listener => listener({ type: "connected" }));

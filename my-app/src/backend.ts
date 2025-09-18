@@ -55,7 +55,7 @@ export class Network {
         if (this.socket) {
             this.socket.close();
         }
-        this.socket = new WebSocket('ws://34.53.56.116');
+        this.socket = new WebSocket('ws://34.82.227.188');
         // this.socket = new WebSocket('ws://127.0.0.1');
         this.socket.addEventListener('open', () => {
             console.log('Connected to WS Server');
@@ -70,7 +70,4 @@ export class Network {
     public onMessage(callback: (msg: Message) => void) {
         this.listeners.push(callback);
     }
-
-    // const socket = new WebSocket('ws://localhost:3000');
-    // let message: Message = JSON.parse(event.data);
 }
